@@ -53,3 +53,14 @@ module "bastion" {
   # other module dependencies
   route_table_id = "${module.vpc.route_table_id}"
 }
+
+module "consul" {
+  source = "modules/consul"
+
+  vpc_id = "${aws_vpc.lamp.id}"
+  vpc_cidr = "${aws_vpc.lamp.cidr_block}"
+  azs = "${var.azs}"
+  region = "${var.REGION}"
+  consul_count = "${var.consul_count}"
+  consul_tag = "${var.consul_tag}"
+}

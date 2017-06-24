@@ -15,13 +15,22 @@ variable "bastion_tag" {
 }
 
 variable "bastion_count" {
-  # set to either 0 or 1
-  default = 1
+# set to either 0 or 1
+default = 1
+}
+
+variable "consul_tag" {
+  default = "LAMP: Consul"
 }
 
 variable "azs" {
   type = "list"
   default = ["a", "b"]
+}
+
+variable "consul_count" {
+   # should be an odd number
+   default = 1
 }
 
 variable "vpc_cidr_block" {
