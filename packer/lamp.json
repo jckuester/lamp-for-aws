@@ -1,32 +1,82 @@
 {
-  "builders": [{
-    "name": "apache2",
-    "type": "amazon-ebs",
-    "region": "{{user `region`}}",
-    "instance_type": "t2.micro",
-    "ami_name": "{{build_name}}-{{user `build_version`}}",
-    "ssh_username": "ubuntu",
-    "source_ami_filter": {
-      "filters": {
-        "virtualization-type": "hvm",
-        "name": "*ubuntu-trusty-14.04-amd64-server-*",
-        "root-device-type": "ebs"
-      },
-      "owners": ["099720109477"],
-      "most_recent": true
+  "builders": [
+    {
+      "name": "apache2",
+      "type": "amazon-ebs",
+      "region": "{{user `region`}}",
+      "instance_type": "t2.micro",
+      "ami_name": "{{build_name}}-{{user `build_version`}}",
+      "ssh_username": "ubuntu",
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "*ubuntu-trusty-14.04-amd64-server-*",
+          "root-device-type": "ebs"
+        },
+        "owners": [
+          "099720109477"
+        ],
+        "most_recent": true
+      }
+    },
+    {
+      "name": "consul",
+      "type": "amazon-ebs",
+      "region": "{{user `region`}}",
+      "instance_type": "t2.micro",
+      "ami_name": "{{build_name}}-{{user `build_version`}}",
+      "ssh_username": "ubuntu",
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "*ubuntu-xenial-16.04-amd64-server-*",
+          "root-device-type": "ebs"
+        },
+        "owners": [
+          "099720109477"
+        ],
+        "most_recent": true
+      }
     }
-  }],
-  "provisioners": [{
+  ],
+  "provisioners": [
+    {
       "type": "chef-solo",
-      "only": ["apache2"],
-      "cookbook_paths": ["cookbooks"],
+      "only": [
+        "apache2"
+      ],
+      "cookbook_paths": [
+        "cookbooks"
+      ],
       "run_list": [
         "apt",
         "apache2",
         "apache2::mod_php5",
         "php",
         "php::module_mysql",
+        "consul",
         "lamp-for-aws-cookbook"
       ]
-    }]
+    },
+    {
+      "type": "chef-solo",
+      "only": [
+        "consul"
+      ],
+      "cookbook_paths": [
+        "cookbooks"
+      ],
+      "run_list": [
+        "apt",
+        "consul"
+      ],
+      "json": {
+        "consul": {
+          "config": {
+            "server": true
+          }
+        }
+      }
+    }
+  ]
 }
