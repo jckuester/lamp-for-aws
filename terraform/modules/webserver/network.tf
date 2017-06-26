@@ -9,29 +9,8 @@ resource "aws_subnet" "webserver" {
   }
 }
 
-resource "aws_internet_gateway" "webserver" {
-  vpc_id = "${var.vpc_id}"
-
-  tags {
-    Name = "${var.webserver_tag}"
-  }
-}
-
-resource "aws_route_table" "webserver" {
-  vpc_id = "${var.vpc_id}"
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = "${aws_internet_gateway.webserver.id}"
-  }
-
-  tags {
-    Name = "${var.webserver_tag}"
-  }
-}
-
 resource "aws_route_table_association" "webserver" {
   count = "${length(var.azs)}"
   subnet_id = "${element(aws_subnet.webserver.*.id, count.index)}"
-  route_table_id = "${aws_route_table.webserver.id}"
+  route_table_id = "${var.route_table_id}"
 }
