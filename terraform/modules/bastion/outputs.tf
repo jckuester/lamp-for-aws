@@ -1,5 +1,5 @@
 output "cidrs" {
-  value = "${aws_subnet.bastion.cidr_block}"
+  value = ["${aws_subnet.bastion.*.cidr_block}"]
 }
 
 output "key_name" {
