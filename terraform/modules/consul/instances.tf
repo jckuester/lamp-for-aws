@@ -4,13 +4,15 @@ resource "aws_instance" "consul" {
   subnet_id = "${element(aws_subnet.consul.*.id, count.index)}"
   private_ip = "${cidrhost(element(aws_subnet.consul.*.cidr_block, count.index), 4 + count.index)}"
   monitoring = true
+  key_name = "${var.key_name}"
 
   count = "${var.consul_count}"
   associate_public_ip_address = true
 
   vpc_security_group_ids = [
     "${aws_security_group.nodes_consul.id}",
-    "${aws_security_group.consul_consul.id}"
+    "${aws_security_group.consul_consul.id}",
+    "${aws_security_group.bastion_consul.id}"
   ]
 
   tags {

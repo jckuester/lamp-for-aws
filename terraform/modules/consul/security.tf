@@ -52,6 +52,30 @@ resource "aws_security_group" "nodes_consul" {
   }
 }
 
+resource "aws_security_group" "bastion_consul" {
+  name = "bastion -: consul"
+  description = "Allow ssh from bastion"
+  vpc_id = "${var.vpc_id}"
+
+  ingress {
+    from_port = 22
+    to_port = 22
+    protocol = "tcp"
+    cidr_blocks = ["${var.bastion_cidrs}"]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags {
+    Name = "${var.consul_tag}"
+  }
+}
+
 resource "aws_security_group" "consul_consul" {
   name = "consul -: consul"
   description = "Allow intra VPC traffic in consul"

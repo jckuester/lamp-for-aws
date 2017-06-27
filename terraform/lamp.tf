@@ -57,10 +57,14 @@ module "bastion" {
 module "consul" {
   source = "modules/consul"
 
-  vpc_id = "${aws_vpc.lamp.id}"
-  vpc_cidr = "${aws_vpc.lamp.cidr_block}"
+  vpc_id = "${module.vpc.vpc_id}"
+  vpc_cidr = "${var.vpc_cidr_block}"
   azs = "${var.azs}"
   region = "${var.REGION}"
   consul_count = "${var.consul_count}"
   consul_tag = "${var.consul_tag}"
+
+  # other module dependencies
+  bastion_cidrs = "${module.bastion.cidrs}"
+  key_name = "${module.bastion.key_name}"
 }
