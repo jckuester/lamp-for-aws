@@ -1,2 +1,2 @@
-variable "vpc_cidr" { }
-variable "lamp_tag" { }
+variable "vpc_cidr" {}
+variable "lamp_tag" {}

@@ -48,7 +48,8 @@ resource "aws_launch_configuration" "webserver" {
   user_data = "${data.template_cloudinit_config.readmodel.rendered}"
   security_groups = [
     "${aws_security_group.webserver.id}",
-    "${aws_security_group.bastion_webserver.id}"
+    "${aws_security_group.bastion_webserver.id}",
+    "${var.consul_gossip_security_group_id}"
   ]
 
   lifecycle {

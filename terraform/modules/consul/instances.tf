@@ -7,7 +7,6 @@ resource "aws_instance" "consul" {
   key_name = "${var.key_name}"
 
   count = "${var.consul_count}"
-  associate_public_ip_address = true
 
   vpc_security_group_ids = [
     "${aws_security_group.nodes_consul.id}",
@@ -18,6 +17,20 @@ resource "aws_instance" "consul" {
   tags {
     Name = "${var.consul_tag}"
   }
+}
+
+resource "aws_route53_zone" "lamp" {
+  name = "lamp.int"
+  vpc_id = "${var.vpc_id}"
+}
+
+resource "aws_route53_record" "consul" {
+  count = "${var.consul_count}"
+  zone_id = "${aws_route53_zone.lamp.zone_id}"
+  name = "consul${count.index}"
+  type = "A"
+  ttl = "300"
+  records = ["${element(aws_instance.consul.*.private_ip, count.index)}"]
 }
 
 data "aws_ami" "consul" {

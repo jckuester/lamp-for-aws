@@ -9,3 +9,4 @@ variable "db_server_address" { }
 variable "route_table_id" { }
 variable "bastion_cidrs" { type = "list" }
 variable "key_name" { }
+variable "consul_gossip_security_group_id" {}

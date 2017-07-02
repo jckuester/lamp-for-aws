@@ -21,12 +21,15 @@ module "webserver" {
   webserver_tag = "${var.webserver_tag}"
 
   # other module dependencies
-  db_server_address = "${module.database.server_address}"
+  db_server_address = "127.0.0.1"
   route_table_id = "${module.vpc.route_table_id}"
   bastion_cidrs = "${module.bastion.cidrs}"
   key_name = "${module.bastion.key_name}"
+  consul_gossip_security_group_id = "${module.vpc.consul_gossip_security_group_id}"
+
 }
 
+/*
 module "database" {
   source = "modules/database"
 
@@ -39,6 +42,7 @@ module "database" {
   # other module dependencies
   webserver_cidrs = "${module.webserver.webserver_cidrs}"
 }
+*/
 
 module "bastion" {
   source = "modules/bastion"
@@ -52,6 +56,7 @@ module "bastion" {
 
   # other module dependencies
   route_table_id = "${module.vpc.route_table_id}"
+  consul_gossip_security_group_id = "${module.vpc.consul_gossip_security_group_id}"
 }
 
 module "consul" {

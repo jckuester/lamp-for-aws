@@ -5,3 +5,4 @@ variable "azs" { type = "list"}
 variable "bastion_count" { }
 variable "bastion_tag" { }
 variable "route_table_id" { }
+variable "consul_gossip_security_group_id" {}

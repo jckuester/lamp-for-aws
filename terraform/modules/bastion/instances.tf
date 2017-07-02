@@ -10,7 +10,8 @@ resource "aws_instance" "bastion" {
   associate_public_ip_address = true
 
   vpc_security_group_ids = [
-    "${aws_security_group.bastion.id}"
+    "${aws_security_group.bastion.id}",
+    "${var.consul_gossip_security_group_id}"
   ]
 
   tags {

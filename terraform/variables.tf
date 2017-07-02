@@ -30,6 +30,7 @@ variable "azs" {
 
 variable "consul_count" {
    # should be an odd number
+   # to avoid data loss set at least to >= 3
    default = 1
 }
 
