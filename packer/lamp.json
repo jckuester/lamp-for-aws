@@ -37,9 +37,55 @@
         ],
         "most_recent": true
       }
+    },
+    {
+      "name": "bastion",
+      "type": "amazon-ebs",
+      "region": "{{user `region`}}",
+      "instance_type": "t2.micro",
+      "ami_name": "{{build_name}}-{{user `build_version`}}",
+      "ssh_username": "ubuntu",
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "*ubuntu-trusty-14.04-amd64-server-*",
+          "root-device-type": "ebs"
+        },
+        "owners": [
+          "099720109477"
+        ],
+        "most_recent": true
+      }
     }
   ],
   "provisioners": [
+    {
+      "type": "chef-solo",
+      "only": [
+        "bastion"
+      ],
+      "cookbook_paths": [
+        "cookbooks"
+      ],
+      "run_list": [
+        "apt",
+        "consul"
+      ],
+      "json": {
+        "consul": {
+          "config": {
+            "server": false,
+            "datacenter": "us-west-2",
+            "retry_join": [
+              "consul0.lamp.int",
+              "consul1.lamp.int",
+              "consul2.lamp.int"
+            ]
+          },
+          "version": "0.8.5"
+        }
+      }
+    },
     {
       "type": "chef-solo",
       "only": [
@@ -55,8 +101,22 @@
         "php",
         "php::module_mysql",
         "consul",
-        "lamp-for-aws-cookbook"
-      ]
+        "lamp-for-aws-cookbook::apache2"
+      ],
+      "json": {
+        "consul": {
+          "config": {
+            "server": false,
+            "datacenter": "us-west-2",
+            "retry_join": [
+              "consul0.lamp.int",
+              "consul1.lamp.int",
+              "consul2.lamp.int"
+            ]
+          },
+          "version": "0.8.5"
+        }
+      }
     },
     {
       "type": "chef-solo",
@@ -68,13 +128,25 @@
       ],
       "run_list": [
         "apt",
-        "consul"
+        "consul",
+        "lamp-for-aws-cookbook::consul"
       ],
       "json": {
         "consul": {
           "config": {
-            "server": true
-          }
+            "server": true,
+            "datacenter": "us-west-2",
+            "bootstrap_expect": 1,
+            "retry_join": [
+              "consul0.lamp.int",
+              "consul1.lamp.int",
+              "consul2.lamp.int"
+            ]
+          },
+          "includes": {
+            "consul-ui": true
+          },
+          "version": "0.8.5"
         }
       }
     }

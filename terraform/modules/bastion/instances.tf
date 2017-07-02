@@ -21,11 +21,11 @@ resource "aws_instance" "bastion" {
 
 data "aws_ami" "bastion" {
   most_recent = true
-  owners = ["099720109477"]
+  owners = ["${data.aws_caller_identity.current.account_id}"]
 
   filter {
     name = "name"
-    values = ["*ubuntu-trusty-14.04-amd64-server-*"]
+    values = ["bastion-*"]
   }
 
   filter {
@@ -40,6 +40,10 @@ data "aws_ami" "bastion" {
 
   filter {
     name = "is-public"
-    values = ["true"]
+    values = ["false"]
   }
+}
+
+data "aws_caller_identity" "current" {
+  # no arguments
 }
