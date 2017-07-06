@@ -20,6 +20,25 @@
       }
     },
     {
+      "name": "mysql",
+      "type": "amazon-ebs",
+      "region": "{{user `region`}}",
+      "instance_type": "t2.micro",
+      "ami_name": "{{build_name}}-{{user `build_version`}}",
+      "ssh_username": "ubuntu",
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "*ubuntu-trusty-14.04-amd64-server-*",
+          "root-device-type": "ebs"
+        },
+        "owners": [
+          "099720109477"
+        ],
+        "most_recent": true
+      }
+    },
+    {
       "name": "consul",
       "type": "amazon-ebs",
       "region": "{{user `region`}}",
@@ -48,7 +67,7 @@
       "source_ami_filter": {
         "filters": {
           "virtualization-type": "hvm",
-          "name": "*ubuntu-trusty-14.04-amd64-server-*",
+          "name": "*ubuntu-xenial-16.04-amd64-server-*",
           "root-device-type": "ebs"
         },
         "owners": [
@@ -73,9 +92,17 @@
       ],
       "json": {
         "consul": {
+          "service_user": "root",
+          "service_group": "root",
+          "create_service_user": false,
           "config": {
             "server": false,
+            "ui": true,
             "datacenter": "us-west-2",
+            "ports": {
+              "dns": 53
+            },
+            "recursors" : [ "10.0.0.2" ],
             "retry_join": [
               "consul0.lamp.int",
               "consul1.lamp.int",
@@ -101,7 +128,45 @@
         "php",
         "php::module_mysql",
         "consul",
+        "consul-template",
         "lamp-for-aws-cookbook::apache2"
+      ],
+      "json": {
+        "consul": {
+          "service_user": "root",
+          "service_group": "root",
+          "create_service_user": false,
+          "config": {
+            "server": false,
+            "ui": true,
+            "datacenter": "us-west-2",
+            "ports": {
+              "dns": 53
+            },
+            "recursors" : [ "10.0.0.2" ],
+            "retry_join": [
+              "consul0.lamp.int",
+              "consul1.lamp.int",
+              "consul2.lamp.int"
+            ]
+          },
+          "version": "0.8.5"
+        }
+      }
+    },
+    {
+      "type": "chef-solo",
+      "only": [
+        "mysql"
+      ],
+      "cookbook_paths": [
+        "cookbooks"
+      ],
+      "run_list": [
+        "apt",
+        "consul",
+        "consul-template",
+        "lamp-for-aws-cookbook::mysql"
       ],
       "json": {
         "consul": {
@@ -135,8 +200,8 @@
         "consul": {
           "config": {
             "server": true,
-            "datacenter": "us-west-2",
             "bootstrap_expect": 1,
+            "datacenter": "us-west-2",
             "retry_join": [
               "consul0.lamp.int",
               "consul1.lamp.int",
@@ -149,6 +214,37 @@
           "version": "0.8.5"
         }
       }
+    },
+    {
+      "type": "shell",
+      "inline_shebang": "/bin/bash -e",
+      "inline": [
+        "sudo consul leave",
+        "sudo su -c 'rm -r /var/lib/consul/*'"
+      ]
+    },
+    {
+      "type": "shell",
+      "inline_shebang": "/bin/bash -e",
+      "only": [
+        "bastion",
+        "apache2"
+      ],
+      "inline": [
+        "sudo su -c 'echo \"prepend domain-name-servers 127.0.0.1;\" >> /etc/dhcp/dhclient.conf'"
+      ]
+    },
+    {
+      "type": "shell",
+      "inline_shebang": "/bin/bash -e",
+      "only": [
+        "mysql"
+      ],
+      "inline": [
+        "mysql -h 127.0.0.1 -u root -p'change me' -e \"GRANT ALL PRIVILEGES ON *.* TO 'lamp'@'%' IDENTIFIED BY 'lamp1234' WITH GRANT OPTION; flush privileges;\"",
+        "mysql -h 127.0.0.1 -u root -p'change me' -e 'CREATE DATABASE lamp;'",
+        "mysql -h 127.0.0.1 -u root -p'change me' -e 'use lamp; CREATE TABLE lamp (id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY, sometext VARCHAR(50), reg_date TIMESTAMP);'"
+      ]
     }
   ]
 }
