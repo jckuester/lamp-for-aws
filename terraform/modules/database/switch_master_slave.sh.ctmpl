@@ -1,21 +1,27 @@
 #!/bin/bash
 
-master_ip={{ key "mysql/master" }}
+master_ip={{ key_or_default "mysql/master" "0.0.0.0" }}
 my_ip=$(/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}')
 
 if [ "$my_ip" == "$master_ip" ]; then
     mysql -h 127.0.0.1 -u root -p'change me' <<EOF
     STOP SLAVE;
+    SET GLOBAL read_only = OFF;
+    UNLOCK TABLES;
     RESET MASTER;
 EOF
+    echo "Switched to master!"
 else
     mysql -h 127.0.0.1 -u root -p'change me' <<EOF
-STOP SLAVE;
-CHANGE MASTER TO
-    MASTER_HOST='{{ key "mysql/master" }}',
-    MASTER_PORT=3306,
-    MASTER_USER='lamp',
-    MASTER_PASSWORD='lamp1234';
-START SLAVE;
+    STOP SLAVE;
+    FLUSH TABLES WITH READ LOCK;
+    SET GLOBAL read_only = ON;
+    CHANGE MASTER TO
+        MASTER_HOST="$master_ip",
+        MASTER_PORT=3306,
+        MASTER_USER='lamp',
+        MASTER_PASSWORD='lamp1234';
+    START SLAVE;
 EOF
+    echo "Switched to slave!"
 fi
