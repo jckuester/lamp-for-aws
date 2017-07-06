@@ -1,21 +1,21 @@
 #!/bin/bash
 
-master_ip={{ key mysql/master }}
+master_ip={{ key "mysql/master" }}
+my_ip=$(/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}')
 
-if [ my_ip == "$master_ip" ]; then
+if [ "$my_ip" == "$master_ip" ]; then
     mysql -h 127.0.0.1 -u root -p'change me' <<EOF
     STOP SLAVE;
     RESET MASTER;
 EOF
-    exit 0
-fi
-
-mysql -h 127.0.0.1 -u root -p'change me' <<EOF
+else
+    mysql -h 127.0.0.1 -u root -p'change me' <<EOF
 STOP SLAVE;
 CHANGE MASTER TO
-    MASTER_HOST='{{ key mysql/master }}',
+    MASTER_HOST='{{ key "mysql/master" }}',
     MASTER_PORT=3306,
     MASTER_USER='lamp',
     MASTER_PASSWORD='lamp1234';
 START SLAVE;
 EOF
+fi

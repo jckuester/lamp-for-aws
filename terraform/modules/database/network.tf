@@ -8,12 +8,3 @@ resource "aws_subnet" "database" {
     Name = "${var.database_tag}"
   }
 }
-
-resource "aws_db_subnet_group" "database" {
-  name       = "lamp"
-  subnet_ids = ["${aws_subnet.database.*.id}"]
-
-  tags {
-    Name = "${var.database_tag}"
-  }
-}

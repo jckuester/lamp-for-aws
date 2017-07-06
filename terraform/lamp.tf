@@ -19,9 +19,9 @@ module "webserver" {
   azs = "${var.azs}"
   region = "${var.REGION}"
   webserver_tag = "${var.webserver_tag}"
+  db_server_address = "mysql.service.us-west-2.consul"
 
   # other module dependencies
-  db_server_address = "127.0.0.1"
   route_table_id = "${module.vpc.route_table_id}"
   bastion_cidrs = "${module.bastion.cidrs}"
   key_name = "${module.bastion.key_name}"
@@ -29,7 +29,6 @@ module "webserver" {
 
 }
 
-/*
 module "database" {
   source = "modules/database"
 
@@ -38,11 +37,14 @@ module "database" {
   azs = "${var.azs}"
   region = "${var.REGION}"
   database_tag = "${var.database_tag}"
+  database_count = "${var.database_count}"
 
   # other module dependencies
   webserver_cidrs = "${module.webserver.webserver_cidrs}"
+  key_name = "${module.bastion.key_name}"
+  consul_gossip_security_group_id = "${module.vpc.consul_gossip_security_group_id}"
+  bastion_cidrs = "${module.bastion.cidrs}"
 }
-*/
 
 module "bastion" {
   source = "modules/bastion"
