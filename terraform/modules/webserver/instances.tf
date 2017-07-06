@@ -1,5 +1,5 @@
 data "template_file" "index_php" {
-  template = "${file("${path.module}/index.php")}"
+  template = "${file("${path.module}/index.php.ctmpl")}"
 
   vars {
     db_server_address = "${var.db_server_address}"
@@ -7,7 +7,7 @@ data "template_file" "index_php" {
 }
 
 
-data "template_cloudinit_config" "readmodel" {
+data "template_cloudinit_config" "index_php" {
   gzip          = true
   base64_encode = false
 
@@ -18,8 +18,13 @@ data "template_cloudinit_config" "readmodel" {
 
   part {
     content_type = "text/plain-base64"
-    filename = "/var/www/index.php"
+    filename = "/var/www/index.php.ctmpl"
     content = "${base64encode("${data.template_file.index_php.rendered}")}"
+  }
+  part {
+    content_type = "text/plain-base64"
+    filename = "/var/www/motd.html.ctmpl"
+    content = "${base64encode(file("${path.module}/motd.html.ctmpl"))}"
   }
 }
 
@@ -45,7 +50,8 @@ resource "aws_launch_configuration" "webserver" {
   image_id = "${data.aws_ami.webserver.id}"
   instance_type = "t2.micro"
   key_name = "${var.key_name}"
-  user_data = "${data.template_cloudinit_config.readmodel.rendered}"
+  user_data = "${data.template_cloudinit_config.index_php.rendered}"
+  associate_public_ip_address = true
   security_groups = [
     "${aws_security_group.webserver.id}",
     "${aws_security_group.bastion_webserver.id}",

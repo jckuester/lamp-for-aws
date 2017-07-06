@@ -1,50 +1,60 @@
 <html>
 <head>
-<title>LAMP Stack Reloaded: An AWS example</title>
+<title>LAMP Stack Reloaded</title>
 </head>
 
 <body>
-<h1>LAMP Stack Reloaded: An AWS example</h1>
+<div style="position: absolute; left: 50%; margin-left: -400px; width:800px; background: white; border: 2px solid black">
+<center>
+<h2>Demo: A LAMP Stack for AWS</h2>
 
 <?php
-$servername = "${db_server_address}";
+
+/*
+DISCLAIMER
+Don't judge this php code, it's ugly and I know it; but
+it does its job for this demo.
+*/
+
+$server_read = "${db_server_address}";
+$server_write = "{{ key "mysql/master" }}";
 $username = "lamp";
 $password = "lamp1234";
 $db = "lamp";
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $db);
+$connection_read = new mysqli($server_read, $username, $password, $db);
+$connection_write = new mysqli($server_write, $username, $password, $db);
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+if ($connection_read->connect_error) {
+    die("Connection failed: " . $connection_read->connect_error);
 }
-print "Connected successfully to " . $servername . "!<br>";
+print 'Connected successfully to <font color="#ff0000">' . $server_read . '</font> for reads.<br><br>';
 
-// sql to create table
-$sql = "CREATE TABLE Lamp2 (
-id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-sometext VARCHAR(50),
-reg_date TIMESTAMP
-)";
+if ($connection_write->connect_error) {
+    die("Connection failed: " . $connection_write->connect_error);
+}
+print 'Connected successfully to <font color="#ff0000">' . $server_write . '</font> for writes.<br><br>';
 
-if ($conn->query($sql) === TRUE) {
-    echo "Table  created successfully!";
-} else {
-    //echo "Error creating table: " . $conn->error . "<br>";
+print '<form action="index.php" method="post">
+Some text: <input type="text" name="sometext"><br>
+<input type="submit">
+</form>';
+
+if(isset($_POST['sometext'])) {
+
+    $sql = "INSERT INTO lamp (sometext) VALUES ('" . $_POST['sometext'] . "')";
+
+    if ($connection_write->query($sql) === TRUE) {
+        echo "New record '" . $_POST['sometext'] . "' created successfully! <br><br>";
+    } else {
+        echo "Error: " . $sql . "<br>" . $connection_write->error;
+    }
+    header("Location: index.php");
+    exit();
 }
 
-$value = "Bla";
-$sql = "INSERT INTO Lamp2 (sometext) VALUES ('" . $value . "')";
-
-if ($conn->query($sql) === TRUE) {
-    echo "New record '" . $value . "' created successfully! <br><br>";
-} else {
-    echo "Error: " . $sql . "<br>" . $conn->error;
-}
-
-$sql = "SELECT id, sometext FROM Lamp2";
-$result = $conn->query($sql);
+$sql = "SELECT id, sometext FROM lamp";
+$result = $connection_read->query($sql);
 
 print "<table border=1>
   <tr>
@@ -53,7 +63,6 @@ print "<table border=1>
   </tr>";
 
 if ($result->num_rows > 0) {
-    // output data of each row
     while($row = $result->fetch_assoc()) {
         echo "<tr><td>" . $row["id"]. "</td><td>" . $row["sometext"] . "</td></tr>";
     }
@@ -63,8 +72,12 @@ if ($result->num_rows > 0) {
 
 print "</table>";
 
-$conn->close();
+$connection_read->close();
+$connection_write->close();
 ?>
-</body>
 
+<br><br>
+</center>
+</div>
+</body>
 </html>

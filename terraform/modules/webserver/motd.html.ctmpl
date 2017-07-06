@@ -1,0 +1,18 @@
+<html>
+<head>
+<title>LAMP Stack Reloaded</title>
+</head>
+
+<body>
+
+<div style="position: absolute; left: 50%; margin-left: -400px; width:800px; height: 250px; background: white; border: 2px solid black">
+<center>
+<h2>Demo: A LAMP Stack for AWS</h2>
+<br>
+<h4>Message of the day proudly presented by consul-template:</h4>
+<h2><b><font color="#ff0000">{{ key_or_default "apache2/motd" "Stay calm and relax!" }}</font></b></h2><br><br>
+
+</center>
+ </div>
+</body>
+</html>
