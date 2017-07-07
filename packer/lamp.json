@@ -219,7 +219,7 @@
       "type": "shell",
       "inline_shebang": "/bin/bash -e",
       "inline": [
-        "sudo consul leave",
+        "sudo service consul stop",
         "sudo su -c 'rm -r /var/lib/consul/*'"
       ]
     },
