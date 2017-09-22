@@ -1,7 +1,13 @@
 provider "aws" {
+  version = ">= 0.1.4"
+
   region = "${var.REGION}"
   # default location is $HOME/.aws/credentials
   profile = "${var.PROFILE}"
+}
+
+terraform {
+  required_version = ">= 0.10.0"
 }
 
 module "vpc" {
